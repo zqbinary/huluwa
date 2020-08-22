@@ -1,12 +1,12 @@
-// routes/index.js and users.js
 import express from 'express';
 import rt from '../utils';
+import storeX from "../index";
 
 var router = express.Router();
-
-/* GET home page. */
 router.get('/', function (req, res, next) {
-    res.json(rt());
+    console.log('start req')
+    storeX.actions.getTaskList(storeX, [0, 0, 20]);
+    res.json(rt('', '', storeX));
 });
 
 export default router;
