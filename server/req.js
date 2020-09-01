@@ -299,10 +299,10 @@ export default {
         return httpServicePost("/dp/task/info", "TaskInfo", req, cb);
     },
     postTaskStart: function (req, cb) {
-        httpServicePost("/dp/task/start", "TaskStart", req, cb);
+        return httpServicePost("/dp/task/start", "TaskStart", req, cb);
     },
     postTaskPause: function (req, cb) {
-        httpServicePost("/dp/task/pause", "TaskPause", req, cb);
+        return httpServicePost("/dp/task/pause", "TaskPause", req, cb);
     },
     postTaskRestore: function (req, cb) {
         httpServicePost("/dp/task/restore", "TaskRestore", req, cb);

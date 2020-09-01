@@ -38,6 +38,52 @@ class Action {
         return dot_get(dict, code) || '未知编码';
     }
 
+    static async postTaskPause(ids) {
+        let req = {
+            token: store.state.user.owcode,
+            userid: store.state.user.uid,
+            pid: store.state.user.pid,
+            uuid: store.state.user.uuid,
+            taskid: ids//array
+        };
+        try {
+            let data = await Req.postTaskPause(req);
+            if (!data.resp.rtn) {
+                return rt(200, '暂停成功', data)
+                // store.dispatch('updateTaskState', [id, 2]);
+            } else {
+                return rt(400, '暂停失败', data)
+            }
+        } catch (err) {
+            return rt(500, '暂停错误', e)
+        }
+    }
+
+    static async postTaskStart(ids) {
+        let req = {
+            token: store.state.user.owcode,
+            userid: store.state.user.uid,
+            pid: store.state.user.pid,
+            uuid: store.state.user.uuid,
+            taskid: ids
+        };
+        try {
+            let data = await Req.postTaskStart(req);
+            // store.dispatch('sendUserLog', ['postTaskStart', JSON.stringify(req) + JSON.stringify(data)]);
+            if (!data.resp.rtn) {
+                return rt(200, '开始成功', data)
+                // store.dispatch('updateTaskState', [id, 1]);
+            } else {
+                // store.state.alertToast.type = 'error';
+                // store.state.alertToast.text = '任务开启失败';
+                return rt(400, '开始失败', data)
+            }
+        } catch (e) {
+            return rt(500, '任务开始错误', e)
+        }
+
+    }
+
     //支持多个
     static async postTaskNew(urlsString) {
         let urls = urlsString.split("\n");
@@ -112,7 +158,6 @@ class Action {
         }
     }
 
-
     static async getTaskInfo(ids) {
         let req = {
             rid: new Date().getTime(),
@@ -123,8 +168,8 @@ class Action {
             taskid: ids
         };
         let data = await Req.postTaskInfo(req)
-        dd('res', data)
-        return rt('', '', data)
+        // dd('res', data)
+        // return rt('', '', data)
         let lists = [];
         for (let index = 0; index < data.taskInfo.length; index++) {
             let newItem = data.taskInfo[index];
@@ -145,7 +190,7 @@ class Action {
             };
             lists.push(newItem)
         }
-        return rt(200, '', {lists, origin: data})
+        return rt(200, 'ok', {lists, origin: data})
     }
 
     static async getTaskList(type, pos, num) {
@@ -168,92 +213,97 @@ class Action {
                 // store.dispatch('logout');
             }
 
-            return rt('', '', data)
-            if (!data || !data.taskidList || !data.taskidList.length) {
-                return rt(200, '任务列表是空的')
-            }
+            //todo think more
+            //后面应该不用 只是为了写入本地
+            return rt('200', 'ok', data)
+            if (true) {
 
-            for (let index = 0; index < data.taskidList.length; index++) {
-                let taskidItem = data.taskidList[index];
-                // 更新任务信息列表状态
-                for (let j = 0; j < store.state.taskInfoList.length; j++) {
-                    let taskInfo = store.state.taskInfoList[j];
-                    if (taskidItem.taskid == taskInfo.taskid) {
-                        taskInfo.state = taskidItem.state;
-
-                    }
+                if (!data || !data.taskidList || !data.taskidList.length) {
+                    return rt(200, '任务列表是空的')
                 }
-                if (taskidItem.state == 3) {
-                    for (let j = 0; j < store.state.downloadTaskidList.length; j++) {
-                        let downloadTaskidInfo = store.state.downloadTaskidList[j];
-                        if (taskidItem.taskid == downloadTaskidInfo.taskid) {
-                            store.state.downloadTaskidList.splice(j, 1);
-                            store.state.downloadTaskCount--;
-                            store.dispatch('getTaskInfo', [
-                                [taskidItem.taskid]
-                            ]);
+
+                for (let index = 0; index < data.taskidList.length; index++) {
+                    let taskidItem = data.taskidList[index];
+                    // 更新任务信息列表状态
+                    for (let j = 0; j < store.state.taskInfoList.length; j++) {
+                        let taskInfo = store.state.taskInfoList[j];
+                        if (taskidItem.taskid == taskInfo.taskid) {
+                            taskInfo.state = taskidItem.state;
 
                         }
                     }
-                }
-            }
+                    if (taskidItem.state == 3) {
+                        for (let j = 0; j < store.state.downloadTaskidList.length; j++) {
+                            let downloadTaskidInfo = store.state.downloadTaskidList[j];
+                            if (taskidItem.taskid == downloadTaskidInfo.taskid) {
+                                store.state.downloadTaskidList.splice(j, 1);
+                                store.state.downloadTaskCount--;
+                                store.dispatch('getTaskInfo', [
+                                    [taskidItem.taskid]
+                                ]);
 
-            // 拉到新任务添加到列表
-            for (let index = 0; index < data.taskidList.length; index++) {
-                const element = data.taskidList[index];
-                if (type == 0) {
-                    let isHas = false;
-                    for (let j = 0; j < store.state.downloadTaskidList.length; j++) {
-                        const taskidItem = store.state.downloadTaskidList[j];
-                        if (taskidItem.taskid == element.taskid) {
-                            isHas = true;
-
+                            }
                         }
                     }
-                    if (!isHas) {
-                        store.state.downloadTaskidList.push(element);
-                    }
-                } else if (type == 1) {
-                    let isHas = false;
-                    for (let j = 0; j < store.state.doneTaskidList.length; j++) {
-                        const taskidItem = store.state.doneTaskidList[j];
-                        if (taskidItem.taskid == element.taskid) {
-                            isHas = true;
+                }
 
+                // 拉到新任务添加到列表
+                for (let index = 0; index < data.taskidList.length; index++) {
+                    const element = data.taskidList[index];
+                    if (type == 0) {
+                        let isHas = false;
+                        for (let j = 0; j < store.state.downloadTaskidList.length; j++) {
+                            const taskidItem = store.state.downloadTaskidList[j];
+                            if (taskidItem.taskid == element.taskid) {
+                                isHas = true;
+
+                            }
+                        }
+                        if (!isHas) {
+                            store.state.downloadTaskidList.push(element);
+                        }
+                    } else if (type == 1) {
+                        let isHas = false;
+                        for (let j = 0; j < store.state.doneTaskidList.length; j++) {
+                            const taskidItem = store.state.doneTaskidList[j];
+                            if (taskidItem.taskid == element.taskid) {
+                                isHas = true;
+
+                            }
+                        }
+                        if (!isHas) {
+                            store.state.doneTaskidList.push(element);
+                        }
+                    } else if (type == 2) {
+                        let isHas = false;
+                        for (let j = 0; j < store.state.delTaskidList.length; j++) {
+                            const taskidItem = store.state.delTaskidList[j];
+                            if (taskidItem.taskid == element.taskid) {
+                                isHas = true;
+
+                            }
+                        }
+                        if (!isHas) {
+                            store.state.delTaskidList.push(element);
                         }
                     }
-                    if (!isHas) {
-                        store.state.doneTaskidList.push(element);
-                    }
-                } else if (type == 2) {
-                    let isHas = false;
-                    for (let j = 0; j < store.state.delTaskidList.length; j++) {
-                        const taskidItem = store.state.delTaskidList[j];
-                        if (taskidItem.taskid == element.taskid) {
-                            isHas = true;
-
-                        }
-                    }
-                    if (!isHas) {
-                        store.state.delTaskidList.push(element);
-                    }
                 }
-            }
 
-            // 更新任务信息
-            let ids = [];
-            for (let index = 0; index < data.taskidList.length; index++) {
-                const element = data.taskidList[index];
-                ids.push(element.taskid);
-            }
-
-            if (ids.length > 0) {
-                store.dispatch('checkTaskInfo', [ids]);
-                if (type == 0) {
-                    // store.dispatch("postTaskMainProgress", [ids]);
+                // 更新任务信息
+                let ids = [];
+                for (let index = 0; index < data.taskidList.length; index++) {
+                    const element = data.taskidList[index];
+                    ids.push(element.taskid);
                 }
-            } else {
-                store.dispatch('updateTaskLists');
+
+                if (ids.length > 0) {
+                    store.dispatch('checkTaskInfo', [ids]);
+                    if (type == 0) {
+                        // store.dispatch("postTaskMainProgress", [ids]);
+                    }
+                } else {
+                    store.dispatch('updateTaskLists');
+                }
             }
         } catch (e) {
             dd('post err', e)

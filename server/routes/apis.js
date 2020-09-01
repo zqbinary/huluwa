@@ -1,6 +1,4 @@
 import express from 'express';
-import {rt, dd} from '../utils';
-import storeX from "../index";
 import Action from "../action";
 
 var router = express.Router();
@@ -13,13 +11,58 @@ router.get('/task/create', async (req, res, next) => {
 
 router.get('/task/list', async (req, res, next) => {
     console.log('start req')
-    let data = await Action.getTaskList(1, 0, 20);
+    let data = await Action.getTaskList(0, 0, 20);
     res.json(data);
 });
 
 router.get('/task/info', async (req, res, next) => {
+    //test 已经完成
     let ids = ['1598871782001']
     let data = await Action.getTaskInfo(ids);
+    res.json(data);
+});
+router.get('/task/info/all', async (req, res, next) => {
+    //test 已经完成
+    let tasks = await Action.getTaskList(0, 0, 50);
+    let ids = [];
+    if (tasks.code < 400) {
+        ids = tasks.data.taskidList.map((item) => item.taskid.toString())
+    }
+    let data = await Action.getTaskInfo(ids);
+    res.json(data);
+});
+router.get('/task/pause', async (req, res, next) => {
+    //test 已经完成
+    let ids = ['1598871782001']
+    let data = await Action.postTaskPause(ids);
+    res.json(data);
+});
+
+router.get('/task/pause/all', async (req, res, next) => {
+    //test 已经完成
+    let tasks = await Action.getTaskList(0, 0, 50);
+    let ids = [];
+    if (tasks.code < 400) {
+        ids = tasks.data.taskidList.map((item) => item.taskid.toString())
+    }
+    let data = await Action.postTaskPause(ids);
+    res.json(data);
+});
+
+router.get('/task/start', async (req, res, next) => {
+    //test 已经完成
+    let ids = ['1598871782001']
+    let data = await Action.postTaskStart(ids);
+    res.json(data);
+});
+router.get('/task/start/all', async (req, res, next) => {
+    //test 已经完成
+    let tasks = await Action.getTaskList(0, 0, 50);
+    let ids = [];
+    if (tasks.code < 400) {
+        ids = tasks.data.taskidList.map((item) => item.taskid.toString())
+    }
+    let data = await Action.postTaskStart(ids);
     res.json(data);
 });
 
