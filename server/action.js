@@ -120,23 +120,7 @@ class Action {
         };
         try {
             let data = await Req.postTaskNew(req);
-            let lists = [];
-            let item = {};
-            for (let index = 0; index < tasks.length; index++) {
-                let task = tasks[index];
-                let resTask = data.taskRes[index];
-                item.rtn = resTask.rtn
-                item.msg = Action.showMsg('postTaskNew.' + resTask.rtn)
-                item.taskid = resTask.taskid.toString();
-                item.url = task.url;
-                //说明 这个链接服务器返回错误
-                if (!resTask.rtn) {
-                    dd('hi task', resTask)
-                }
-                lists.push(item)
-            }
-            dd('res', data.taskRes)
-            return rt('200', '', {origin: data, lists});
+            return rt('200', '', data);
         } catch (e) {
             dd('post err', e)
             return rt('500', '', e);
