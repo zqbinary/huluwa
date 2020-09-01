@@ -1,5 +1,6 @@
 // app.js
 import express from 'express';
+import "regenerator-runtime/runtime.js";
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import bodyParse from 'body-parser'

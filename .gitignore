@@ -1,2 +1,5 @@
 /dist-server
 .env
+.idea
+babel
+/node_modules
