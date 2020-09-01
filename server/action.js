@@ -74,8 +74,6 @@ class Action {
                 return rt(200, '开始成功', data)
                 // store.dispatch('updateTaskState', [id, 1]);
             } else {
-                // store.state.alertToast.type = 'error';
-                // store.state.alertToast.text = '任务开启失败';
                 return rt(400, '开始失败', data)
             }
         } catch (e) {
@@ -122,13 +120,6 @@ class Action {
         };
         try {
             let data = await Req.postTaskNew(req);
-            /**
-             * 612? 表示重复 还是已经下载
-             * return {"resp":{"rtn":612},"taskRes":[{"rtn":612,"taskid":"1598871782005"}]}
-             */
-                //store.statedispatch('sendUserLog', ['postTaskNew', JSON.stringify(req) + JSON.stringify(data)]);
-
-                // if (data && data.taskRes && data.taskRes.length == tasks.length) {
             let lists = [];
             let item = {};
             for (let index = 0; index < tasks.length; index++) {
@@ -141,15 +132,9 @@ class Action {
                 //说明 这个链接服务器返回错误
                 if (!resTask.rtn) {
                     dd('hi task', resTask)
-                    // store.statedispatch('addTaskInfoItem', [resTask.taskid, name, 0]);
-                    // store.statedispatch('addTaskidListItem', [store.state.downloadTaskidList, resTask.taskid, 0]);
                 }
                 lists.push(item)
             }
-            // store.statedispatch('updateTaskLists');
-            // }
-
-            // let res = JSON.parse(JSON.stringify(data));
             dd('res', data.taskRes)
             return rt('200', '', {origin: data, lists});
         } catch (e) {
@@ -168,29 +153,21 @@ class Action {
             taskid: ids
         };
         let data = await Req.postTaskInfo(req)
-        // dd('res', data)
-        // return rt('', '', data)
-        let lists = [];
-        for (let index = 0; index < data.taskInfo.length; index++) {
-            let newItem = data.taskInfo[index];
-            newItem = {
-                completeTime: newItem.completeTime ? newItem.completeTime : 0,
-                createTime: newItem.createTime ? newItem.createTime : 0,
-                downTime: newItem.downTime ? newItem.downTime : 0,
-                failCode: newItem.failCode ? newItem.failCode : 0,
-                name: newItem.name ? newItem.name : '',
-                path: newItem.path ? newItem.path : '',
-                dlSize: newItem.dlSize ? newItem.dlSize : 0,
-                size: newItem.size ? newItem.size : 0,
-                state: newItem.state ? newItem.state : 0,
-                sub: newItem.sub ? newItem.sub : [],
-                taskid: newItem.taskid ? newItem.taskid : '',
-                type: newItem.type ? newItem.type : 0,
-                url: newItem.url ? newItem.url : ''
-            };
-            lists.push(newItem)
+        return rt(200, 'ok', data)
+    }
+
+    static async getDownloadTaskIds() {
+        let tasks = await Action.getTaskList(0, 0, 50);
+        let ids = [];
+        if (tasks.code < 400) {
+            ids = tasks.data.taskidList.map((item) => item.taskid.toString())
+        } else {
+            return tasks;
         }
-        return rt(200, 'ok', {lists, origin: data})
+        if (!ids.length) {
+            return rt(422, '没有任务');
+        }
+        return rt(200, 'ok', ids);
     }
 
     static async getTaskList(type, pos, num) {
@@ -216,100 +193,10 @@ class Action {
             //todo think more
             //后面应该不用 只是为了写入本地
             return rt('200', 'ok', data)
-            if (true) {
-
-                if (!data || !data.taskidList || !data.taskidList.length) {
-                    return rt(200, '任务列表是空的')
-                }
-
-                for (let index = 0; index < data.taskidList.length; index++) {
-                    let taskidItem = data.taskidList[index];
-                    // 更新任务信息列表状态
-                    for (let j = 0; j < store.state.taskInfoList.length; j++) {
-                        let taskInfo = store.state.taskInfoList[j];
-                        if (taskidItem.taskid == taskInfo.taskid) {
-                            taskInfo.state = taskidItem.state;
-
-                        }
-                    }
-                    if (taskidItem.state == 3) {
-                        for (let j = 0; j < store.state.downloadTaskidList.length; j++) {
-                            let downloadTaskidInfo = store.state.downloadTaskidList[j];
-                            if (taskidItem.taskid == downloadTaskidInfo.taskid) {
-                                store.state.downloadTaskidList.splice(j, 1);
-                                store.state.downloadTaskCount--;
-                                store.dispatch('getTaskInfo', [
-                                    [taskidItem.taskid]
-                                ]);
-
-                            }
-                        }
-                    }
-                }
-
-                // 拉到新任务添加到列表
-                for (let index = 0; index < data.taskidList.length; index++) {
-                    const element = data.taskidList[index];
-                    if (type == 0) {
-                        let isHas = false;
-                        for (let j = 0; j < store.state.downloadTaskidList.length; j++) {
-                            const taskidItem = store.state.downloadTaskidList[j];
-                            if (taskidItem.taskid == element.taskid) {
-                                isHas = true;
-
-                            }
-                        }
-                        if (!isHas) {
-                            store.state.downloadTaskidList.push(element);
-                        }
-                    } else if (type == 1) {
-                        let isHas = false;
-                        for (let j = 0; j < store.state.doneTaskidList.length; j++) {
-                            const taskidItem = store.state.doneTaskidList[j];
-                            if (taskidItem.taskid == element.taskid) {
-                                isHas = true;
-
-                            }
-                        }
-                        if (!isHas) {
-                            store.state.doneTaskidList.push(element);
-                        }
-                    } else if (type == 2) {
-                        let isHas = false;
-                        for (let j = 0; j < store.state.delTaskidList.length; j++) {
-                            const taskidItem = store.state.delTaskidList[j];
-                            if (taskidItem.taskid == element.taskid) {
-                                isHas = true;
-
-                            }
-                        }
-                        if (!isHas) {
-                            store.state.delTaskidList.push(element);
-                        }
-                    }
-                }
-
-                // 更新任务信息
-                let ids = [];
-                for (let index = 0; index < data.taskidList.length; index++) {
-                    const element = data.taskidList[index];
-                    ids.push(element.taskid);
-                }
-
-                if (ids.length > 0) {
-                    store.dispatch('checkTaskInfo', [ids]);
-                    if (type == 0) {
-                        // store.dispatch("postTaskMainProgress", [ids]);
-                    }
-                } else {
-                    store.dispatch('updateTaskLists');
-                }
-            }
         } catch (e) {
             dd('post err', e)
             return rt('500', '', e);
         }
-
     }
 }
 

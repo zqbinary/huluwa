@@ -1,4 +1,4 @@
-const rt = (code = 200, msg = '', data = {}) => {
+const rt = (code = 200, msg = 'ok', data = {}) => {
     return {
         code,
         msg,
