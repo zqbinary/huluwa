@@ -182,6 +182,21 @@ class Action {
             return rt('500', '', e);
         }
     }
+
+    static async postTaskMainProgress(ids) {
+        let req = {
+            token: store.state.user.owcode,
+            userid: store.state.user.uid,
+            pid: store.state.user.pid,
+            uuid: store.state.user.uuid,
+            taskid: ids
+        };
+        let data = await Req.postTaskMainProgress(req)
+        let allSpeed = 0;
+        let isRefreshDone = false;
+        return rt('200', 'ok', data)
+      }
+
 }
 
 export default Action;

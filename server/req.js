@@ -310,8 +310,14 @@ export default {
     postTaskDel: function (req, cb) {
         httpServicePost("/dp/task/delete", "TaskDel", req, cb);
     },
+    /**
+     * 查看进度
+     * @param req
+     * @param cb
+     * @returns {*}
+     */
     postTaskMainProgress: function (req, cb) {
-        httpServicePost("/dp/task/progress", "TaskMainProgress", req, cb);
+        return httpServicePost("/dp/task/progress", "TaskMainProgress", req, cb);
     },
     /*
     postTaskNew: function(req, cb) {

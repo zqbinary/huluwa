@@ -4,14 +4,40 @@ import {dd, rt} from '../utils'
 
 var router = express.Router();
 
-router.get('/task/create', async (req, res, next) => {
-    const url = 'magnet:?xt=urn:btih:04051B54ED1343686CBABD256045906274B94A62'
+/**
+ * @return
+ *         /**
+ * {
+        "code": "200",
+        "msg": "",
+        "data": {
+        "resp": {
+        "rtn": 612
+        },
+        "taskRes": [
+        {
+        "rtn": 612,
+        "taskid": "1599882693002"
+        }
+        ]
+        }
+        }
+
+ */
+
+router.get('/hi', (req, res) => {
+    res.json['baby']
+})
+router.post('/task/create', async (req, res, next) => {
+    const url = req.body.url
     let data = await Action.postTaskNew(url)
     res.json(data);
 })
 
-router.get('/task/list', async (req, res, next) => {
-    let data = await Action.getTaskList(0, 0, 20);
+
+router.get('/task/list/:status', async (req, res, next) => {
+    let perPage = req.query.perPage || 20;
+    let data = await Action.getTaskList(req.params.status, 0, perPage);
     res.json(data);
 });
 
@@ -25,6 +51,17 @@ router.get('/task/info/:ids', async (req, res, next) => {
     let data = await Action.getTaskInfo(ids);
     res.json(data);
 });
+
+router.get('/task/process/:ids', async (req, res, next) => {
+    const idsStr = req.params.ids || '';
+    const ids = idsStr.split('|');
+    if (!ids.length) {
+        return res.json(rt(422, '参数错误,缺少 ids'))
+    }
+    let data = await Action.postTaskMainProgress(ids);
+    res.json(data);
+});
+
 router.get('/task/infos', async (req, res, next) => {
     let ids = await Action.getDownloadTaskIds()
     if (ids.code >= 400) {
