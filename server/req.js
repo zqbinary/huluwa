@@ -308,7 +308,7 @@ export default {
         httpServicePost("/dp/task/restore", "TaskRestore", req, cb);
     },
     postTaskDel: function (req, cb) {
-        httpServicePost("/dp/task/delete", "TaskDel", req, cb);
+        return httpServicePost("/dp/task/delete", "TaskDel", req, cb);
     },
     /**
      * 查看进度

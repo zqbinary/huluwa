@@ -70,6 +70,7 @@ router.get('/task/infos', async (req, res, next) => {
     let data = await Action.getTaskInfo(ids.data);
     res.json(data);
 });
+
 router.get('/task/pause/:ids', async (req, res, next) => {
     const idsStr = req.params.ids || '';
     const ids = idsStr.split('|');
@@ -79,6 +80,17 @@ router.get('/task/pause/:ids', async (req, res, next) => {
     let data = await Action.postTaskPause(ids);
     res.json(data);
 });
+
+router.post('/task/delete', async (req, res, next) => {
+    const {id_and_uuid} = req.body
+    let idUuid = JSON.parse(id_and_uuid);
+    let promise = idUuid.map(async (item) => {
+        return await Action.postTaskDel(item.id, item.uuid)
+    })
+    let promiseRes = await Promise.all(promise);
+    res.json(rt(200, 'batch', promiseRes));
+})
+
 
 router.get('/task/pauses', async (req, res, next) => {
     let ids = await Action.getDownloadTaskIds()
